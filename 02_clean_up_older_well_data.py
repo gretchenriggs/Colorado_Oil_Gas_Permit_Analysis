@@ -29,38 +29,43 @@ def cleanup(df):
                                                  .str
     df['operator_num'] = df['operator_num'].str.strip()
 
-    # Removing leading facility status code letters from the permit status
-    #    date, and converting from a string to utf-8 format
-    df['status'] = df['status'].apply(lambda x: x.decode('utf-8'))\
-                               .str.replace("AB","")\
-                               .str.replace("AC","")\
-                               .str.replace("AL","")\
-                               .str.replace("CL","")\
-                               .str.replace("CM","")\
-                               .str.replace("DA","")\
-                               .str.replace("DG","")\
-                               .str.replace("DM","")\
-                               .str.replace("IJ","")\
-                               .str.replace("PA","")\
-                               .str.replace("pa","")\
-                               .str.replace("PD","")\
-                               .str.replace("PR","")\
-                               .str.replace("RC","")\
-                               .str.replace("SI","")\
-                               .str.replace("SU","")\
-                               .str.replace("TA","")\
-                               .str.replace("WO","")\
-                               .str.replace("XX","")\
-                               .str.replace("N/A","")\
-                               .str.replace(u"\xa0", u"")
-    # Saving a N/A status data value to variable na_status, as a
-    df.loc[df['status'] == u"", "status"] = pd.NaT
-    df['status'] == pd.to_datetime(df['status'])
+    # Splitting well status from the permit date in the status column
+    df['well_status'] = df['status'].apply(lambda x: x[0:2])
+    df.loc[df['well_status'] == "N/", "status"] = "N/A"
+
+    # Creating permit_date column by removing leading facility status code
+    #    letters and any "N/A" values from the permit status date, and
+    #    converting from a string to utf-8 format
+    df['permit_date'] = df['status'].apply(lambda x: x.decode('utf-8'))\
+                                    .str.replace("AB","")\
+                                    .str.replace("AC","")\
+                                    .str.replace("AL","")\
+                                    .str.replace("CL","")\
+                                    .str.replace("CM","")\
+                                    .str.replace("DA","")\
+                                    .str.replace("DG","")\
+                                    .str.replace("DM","")\
+                                    .str.replace("IJ","")\
+                                    .str.replace("PA","")\
+                                    .str.replace("pa","")\
+                                    .str.replace("PD","")\
+                                    .str.replace("PR","")\
+                                    .str.replace("RC","")\
+                                    .str.replace("SI","")\
+                                    .str.replace("SU","")\
+                                    .str.replace("TA","")\
+                                    .str.replace("WO","")\
+                                    .str.replace("XX","")\
+                                    .str.replace("N/A","")\
+                                    .str.replace(u"\xa0", u"")
+    # Saving N/A status data value (was replaced with "") to NaT
+    df.loc[df['permit_date'] == u"", "permit_date"] = pd.NaT
+    df['permit_date'] = pd.to_datetime(df['permit_date'])
 
     # Dropping the original combined columns from the DataFrame & unneeded
     #    columns
     df.drop(['facility_name_num', 'field_name_num', 'operator_name_num', \
-             'location'],\
+             'location', 'status'],\
              axis=1, inplace=True)
     df.drop(['Unnamed: 0', 'related_facilities'], axis=1, inplace=True)
 
